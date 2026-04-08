@@ -1,0 +1,74 @@
+name: content-moderation-env
+version: "1.0.0"
+description: >
+  A real-world OpenEnv environment for training and evaluating AI agents on
+  content moderation tasks. Agents must classify, label, and make moderation
+  decisions on user-generated content ranging from social media posts to
+  conversational threads.
+
+author: "The Creative Coders"
+license: "MIT"
+
+tags:
+  - openenv
+  - content-moderation
+  - nlp
+  - classification
+  - real-world
+
+tasks:
+  - name: binary-classification
+    difficulty: easy
+    description: >
+      Classify a piece of user-generated content as 'safe' or 'harmful'.
+      Harmful content includes threats, hate speech, spam, harassment, or abuse.
+    max_steps: 1
+    reward_range: [0.0, 1.0]
+
+  - name: multi-label-toxicity
+    difficulty: medium
+    description: >
+      Assign one or more toxicity labels to a piece of content from the set
+      [hate_speech, spam, harassment, misinformation, safe].
+      Scored by Jaccard similarity against ground truth labels.
+    max_steps: 1
+    reward_range: [0.0, 1.0]
+
+  - name: contextual-moderation
+    difficulty: hard
+    description: >
+      Given a conversation thread and a target reply, decide whether to
+      'remove', 'warn', or 'allow' the content. Provide the policy violated
+      and a natural-language justification. Composite scoring across decision
+      correctness (40%), policy accuracy (30%), and reason quality (30%).
+    max_steps: 1
+    reward_range: [0.0, 1.0]
+
+action_space:
+  type: structured_json
+  fields:
+    label: "string – 'safe' | 'harmful' (Task 1)"
+    labels: "list[string] – toxicity labels (Task 2)"
+    decision: "string – 'remove' | 'warn' | 'allow' (Task 3)"
+    policy_violated: "string – policy name or 'none' (Task 3)"
+    reason: "string – 1-2 sentence justification (Task 3)"
+
+observation_space:
+  type: structured_json
+  fields:
+    task_name: "string – active task identifier"
+    task_description: "string – natural language task description"
+    instructions: "string – action format instructions"
+    available_labels: "list[string] – valid options"
+    post_text: "string – content to moderate"
+    thread_context: "list[string] | null – prior messages (Task 3)"
+    sample_index: "int – 0-based current sample index"
+    total_samples: "int – total samples in task"
+    reward: "float | null – reward from last action"
+    done: "bool – whether episode has ended"
+    feedback: "string | null – human-readable feedback after step"
+
+server:
+  port: 7860
+  framework: fastapi
+  language: python
